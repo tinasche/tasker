@@ -3,6 +3,7 @@ package com.madner;
 
 import org.apache.commons.cli.*;
 import java.io.PrintWriter;
+import java.util.function.Function;
 
 public class App {
 
@@ -26,7 +27,7 @@ public class App {
         printWriter.close();
     }
 
-    public static void main(String[] args) throws ParseException {
+    private static Options initialiseOptions() {
         Options options = new Options();
         options.addOption(AddToList);
         options.addOption(RemoveFromList);
@@ -35,25 +36,34 @@ public class App {
         options.addOption(EditTask);
         options.addOption(FetchTasks);
 
+        return options;
+    }
+
+    public static void main(String[] args) throws ParseException {
+        var options = App.initialiseOptions();
+
         CommandLineParser parser = new DefaultParser();
         CommandLine cmd = parser.parse(options, args);
 
         if (cmd.hasOption("a")) {
-            System.out.println("Adding a new task with title:" + cmd.getOptionValue("a"));
+            System.out.println(TaskStore.AddTask(cmd.getOptionValue("a")));
         } else if (cmd.hasOption("r")) {
-            System.out.println("Removing a task with id: " + cmd.getOptionValue("r"));
+            System.out.println(TaskStore.RemoveTask(getIntValue.apply(cmd.getOptionValue("r"))));
         } else if (cmd.hasOption("d")) {
-            System.out.println("Mark task as done for task with id: " + cmd.getOptionValue("d"));
+            System.out.println(TaskStore.MarkTaskAsDone(getIntValue.apply(cmd.getOptionValue("d"))));
         } else if (cmd.hasOption("p")) {
-            System.out.println("Mark task as pending for task with id: " + cmd.getOptionValue("p"));
+            System.out.println(TaskStore.MarkTaskAsPending(getIntValue.apply(cmd.getOptionValue("p"))));
         } else if (cmd.hasOption("e")) {
-            System.out.println("Edit a task with id: " + cmd.getOptionValue("e"));
+            var editArguments = cmd.getOptionValues("e");
+            System.out.println(TaskStore.EditTask(getIntValue.apply(cmd.getOptionValue(editArguments[0])), editArguments[1]));
         } else if (cmd.hasOption("f")) {
-            System.out.println("Fetching all tasks ");
+            System.out.println(TaskStore.GetTasks());
         }
         else {
             App.printHelp(options);
         }
 
     }
+
+    private static Function<String, Integer> getIntValue = Integer::parseInt;
 }
