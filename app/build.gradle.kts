@@ -22,6 +22,8 @@ dependencies {
     // This dependency is used by the application.
     implementation(libs.guava)
     implementation("commons-cli:commons-cli:1.9.0")
+//    implementation("org.xerial:sqlite-jdbc:3.49.0.0")
+    implementation("com.h2database:h2:2.3.232")
 }
 
 // Apply a specific Java toolchain to ease working on different environments.
@@ -32,7 +34,6 @@ java {
 }
 
 application {
-    // Define the main class for the application.
     mainClass = "com.madner.App"
 }
 

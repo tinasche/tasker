@@ -1,69 +1,54 @@
 package com.madner;
 
-
 import org.apache.commons.cli.*;
-import java.io.PrintWriter;
-import java.util.function.Function;
 
-public class App {
+class App {
 
-    private static final Option AddToList = new Option("a", "add", true, "Add a new task to the list");
-    private static final Option FetchTasks = new Option("f", "fetch", false, "Fetch all tasks in the list");
-    private static final Option RemoveFromList = new Option("r", "remove", true, "Remove a task from the list");
-    private static final Option MarkAsDone = new Option("d", "done", true, "Add a new task to the list");
-    private static final Option MarkAsPending = new Option("p", "pending", true, "Add a new task to the list");
-    private static final Option EditTask = new Option("e", "edit", true, "Add a new task to the list");
-
-    private static void printHelp(Options options) {
-        HelpFormatter helpFormatter = new HelpFormatter();
-        PrintWriter printWriter = new PrintWriter(System.out);
-
-        printWriter.println("Tasker: " + Math.class.getPackage().getImplementationVersion());
-        printWriter.println();
-
-        helpFormatter.printOptions(printWriter, 100, options, 4, 2);
-        helpFormatter.printUsage(printWriter, 100, "tasker [options] [arguments]");
-
-        printWriter.close();
-    }
-
-    private static Options initialiseOptions() {
-        Options options = new Options();
-        options.addOption(AddToList);
-        options.addOption(RemoveFromList);
-        options.addOption(MarkAsDone);
-        options.addOption(MarkAsPending);
-        options.addOption(EditTask);
-        options.addOption(FetchTasks);
-
-        return options;
+    public App() {
     }
 
     public static void main(String[] args) throws ParseException {
-        var options = App.initialiseOptions();
+        Options options = new Options();
+        options.addOption("g", "get", false, "Get all tasks");
+        options.addOption("i", "incomplete", false, "Get all pending tasks");
+        options.addOption("d", "done", false, "Get all done tasks");
+        options.addOption("f", "flush", false, "Flush all tasks");
+        options.addOption("a", "add", true, "Add a new task");
+        options.addOption("u", "update", true, "Update a task using task_id and new task");
+        options.addOption("c", "complete", false, "Marks a task as complete using the task_id");
+        options.addOption("p", "pending", false, "Marks a task as pending using the task_id");
+        options.addOption("r", "remove", true, "Removes a task from list using the task_id");
 
         CommandLineParser parser = new DefaultParser();
         CommandLine cmd = parser.parse(options, args);
 
-        if (cmd.hasOption("a")) {
-            System.out.println(TaskStore.AddTask(cmd.getOptionValue("a")));
-        } else if (cmd.hasOption("r")) {
-            System.out.println(TaskStore.RemoveTask(getIntValue.apply(cmd.getOptionValue("r"))));
-        } else if (cmd.hasOption("d")) {
-            System.out.println(TaskStore.MarkTaskAsDone(getIntValue.apply(cmd.getOptionValue("d"))));
-        } else if (cmd.hasOption("p")) {
-            System.out.println(TaskStore.MarkTaskAsPending(getIntValue.apply(cmd.getOptionValue("p"))));
-        } else if (cmd.hasOption("e")) {
-            var editArguments = cmd.getOptionValues("e");
-            System.out.println(TaskStore.EditTask(getIntValue.apply(cmd.getOptionValue(editArguments[0])), editArguments[1]));
-        } else if (cmd.hasOption("f")) {
-            System.out.println(TaskStore.GetTasks());
-        }
-        else {
-            App.printHelp(options);
+        if (cmd.hasOption('a')) {
+            TaskStore.addTask(cmd.getOptionValue('a'));
+        } else if (cmd.hasOption('f')) {
+            TaskStore.flushTasks();
+        } else if (cmd.hasOption('g')) {
+            TaskStore.getTasks();
+        } else if (cmd.hasOption('i')) {
+            TaskStore.getPending();
+        } else if (cmd.hasOption('d')) {
+            TaskStore.getDone();
+        } else if (cmd.hasOption('u')) {
+            var taskId = Integer.parseInt(cmd.getOptionValues('u')[0]);
+            var newTask = cmd.getOptionValues('u')[1];
+            TaskStore.updateTask(taskId, newTask);
+        } else if (cmd.hasOption('a')) {
+            TaskStore.addTask(cmd.getOptionValue('a'));
+        } else if (cmd.hasOption('r')) {
+            TaskStore.removeTask(Integer.parseInt(cmd.getOptionValue('r')));
+        } else if (cmd.hasOption('p')) {
+            TaskStore.markPending(Integer.parseInt(cmd.getOptionValue('r')));
+        } else if (cmd.hasOption('c')) {
+            TaskStore.markDone(Integer.parseInt(cmd.getOptionValue('r')));
+        } else {
+            HelpFormatter helpFormatter = new HelpFormatter();
+            helpFormatter.printHelp("tasker", options);
         }
 
     }
 
-    private static Function<String, Integer> getIntValue = Integer::parseInt;
 }
